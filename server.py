@@ -11,14 +11,13 @@ from twisted.names import client, dns, error, server
 
 class DynamicResolver(client.Resolver):
     """
-    A resolver which implements xip.io style IP resolution based on name.
-    as well as more conventional glob style DNS wildcard mapping. If no
+    A glob style DNS wildcard mapping. If no
     match will fallback to specified DNS server for lookup.
 
     """
 
 
-    def __init__(self, servers, wildcard_domain, mapped_hosts=None,
+    def __init__(self, servers, mapped_hosts=None,
             debug_level=0):
 
         client.Resolver.__init__(self, servers=servers)
@@ -30,14 +29,6 @@ class DynamicResolver(client.Resolver):
 
         # Create regex pattern corresponding to xip.io style DNS
         # wilcard domain.
-
-        pattern = (r'.*\.(?P<ipaddr>\d+\.\d+\.\d+\.\d+)\.%s' %
-                re.escape(wildcard_domain))
-
-        if self._debug_level > 0:
-            print('wildcard %s' % pattern, file=sys.stderr)
-
-        self._wildcard = re.compile(pattern)
 
         # Create regex pattern corresponding to conventional glob
         # style DNS wildcard mapping.
@@ -152,7 +143,6 @@ def main():
         elif parts:
             server_list.append((parts[0], 53))
 
-    wildcard_domain = os.environ.get('WILDCARD_DOMAIN', 'xip.io')
 
     mapped_hosts = {}
 
@@ -166,7 +156,6 @@ def main():
 
     factory = server.DNSServerFactory(
         clients=[DynamicResolver(servers=server_list,
-            wildcard_domain=wildcard_domain,
             mapped_hosts=mapped_hosts,
             debug_level=debug_level)]
     )
